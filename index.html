@@ -41,7 +41,7 @@ const GRANTER = 0.0072; // wiki: 0.72 % × STR per minute
 function calcXp(){
   const cur   = Math.max(50, Math.min(100, +document.getElementById('curStr').value));
   const tar   = Math.max(51, Math.min(100, +document.getElementById('tarStr').value));
-  const bonus = +document.getElementById('bonusAmt').value || 150; // wiki: 150 × STR
+  const bonus = +document.getElementById('bonusAmt').value || 150;
   const has   = document.getElementById('hasXpBoost').checked;
   if(cur >= tar){ alert('Target must be > Current'); return; }
 
@@ -49,12 +49,12 @@ function calcXp(){
   const triggerChance = has ? (26 * cur) / 60 / 100 : 0; // 0-1
   const bonusPerSec   = triggerChance * bonus;           // average XP injected per second
   const avgXPperSec   = 1 + bonusPerSec;                 // base 1 + average bonus
+  const secondsNeeded = (tar - cur) / avgXPperSec;       // seconds to target
 
-  const secondsNeeded = (tar - cur) / avgXPperSec;
-
-  // ---- never-zero minutes ----
-  const h = Math.floor(secondsNeeded / 3600);
-  const m = Math.max(1, Math.ceil((secondsNeeded % 3600) / 60));
+  // ---- h : m with FLOAT division ----
+  const totalMin = secondsNeeded / 60;                   // float minutes
+  const h = Math.floor(totalMin / 60);
+  const m = Math.ceil(totalMin % 60 || 1);               // never 0, never <1
 
   document.getElementById('xpOut').innerHTML =
     `Average XP/s: <b>${avgXPperSec.toFixed(2)}</b><br>` +
@@ -67,13 +67,16 @@ function calcGranter(){
   const avg    = 1 / perSec;
   const wait95 = -Math.log(1-0.95) / perSec;
 
-  const fmt = s=>{
-    const h = Math.floor(s / 3600);
-    const m = Math.ceil((s % 3600) / 60);
-    return h ? `${h}h ${m}m` : `${m}m`;
-  };
+  const totalMin = avg / 60;
+  const h1 = Math.floor(totalMin / 60);
+  const m1 = Math.ceil(totalMin % 60 || 1);
+  const totalMin95 = wait95 / 60;
+  const h95 = Math.floor(totalMin95 / 60);
+  const m95 = Math.ceil(totalMin95 % 60 || 1);
+
   document.getElementById('granterOut').innerHTML =
-    `Average: <b>${fmt(avg)}</b><br>95 % within: <b>${fmt(wait95)}</b>`;
+    `Average: <b>${h1 ? h1+'h '+m1+'m' : m1+'m'}</b><br>` +
+    `95 % within: <b>${h95 ? h95+'h '+m95+'m' : m95+'m'}</b>`;
 }
 </script>
 </body>
