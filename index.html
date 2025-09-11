@@ -1,37 +1,78 @@
-<script>
-const BONUS_FLAT = 87;          // your sheet value
-const GRANTER    = 0.0072;      // 0.72 % per minute
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Magic Garden Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root{--bg:#121212; --card:#1e1e1e; --text:#e0e0e0; --accent:#4caf50; --line:#333}
+    body{background:var(--bg); color:var(--text); font-family:system-ui, sans-serif; margin:1rem}
+    .card{background:var(--card); border:1px solid var(--line); padding:1.2rem; margin-bottom:1.2rem; border-radius:8px}
+    h2{margin-top:0; color:var(--accent)}
+    label{display:block; margin:.6rem 0 .2rem}
+    input[type=number]{width:6rem; padding:.4rem; background:#2a2a2a; color:var(--text); border:1px solid var(--line); border-radius:4px}
+    button{margin-top:1rem; padding:.5rem 1.3rem; background:var(--accent); color:#000; border:none; border-radius:4px; font-weight:bold}
+    b{color:#fff}
+  </style>
+</head>
+<body>
+  <h1>Magic Garden Calculator</h1>
 
-// ---------- XP ----------
+  <div class="card">
+    <h2>⏱️ XP-Level-Time</h2>
+    <label>Current STR <input id="curStr" type="number" min="50" max="100" value="50"></label>
+    <label>Target STR <input id="tarStr" type="number" min="51" max="100" value="100"></label>
+    <label><input id="hasXpBoost" type="checkbox" checked> Has XP Boost I?</label>
+    <button onclick="calcXp()">Calc</button>
+    <p id="xpOut"></p>
+  </div>
+
+  <div class="card">
+    <h2>🌈 Rainbow / Gold Granter</h2>
+    <label>STR <input id="granterStr" type="number" min="50" max="100" value="100"></label>
+    <button onclick="calcGranter()">Calc</button>
+    <p id="granterOut"></p>
+  </div>
+
+<script>
+const GRANTER = 0.0072; // 0.72 % per minute
+
 function calcXp(){
   const cur  = Math.max(50, Math.min(100, +document.getElementById('curStr').value));
   const tar  = Math.max(51, Math.min(100, +document.getElementById('tarStr').value));
-  const cMin = +document.getElementById('customChance').value;
   const has  = document.getElementById('hasXpBoost').checked;
 
   if(cur >= tar){ alert('Target must be > Current'); return; }
 
-  const cSec   = has ? cMin / 60 / 100 : 0;   // % → decimal /s
-  const xpSec  = 1 + cSec * BONUS_FLAT;       // ticks + bonus
-  const hours  = (tar - cur) / xpSec / 3600;
+  // wiki: 26 % × STR per minute → /60 → /100 for decimal
+  const chanceSec = has ? 26 * cur / 60 / 100 : 0;
+  const bonusAmt  = 150 * cur;          // 150 × STR per trigger
+  const xpSec     = 1 + chanceSec * bonusAmt;
+  const totalSec  = (tar - cur) / xpSec;
+
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.round((totalSec % 3600) / 60);
 
   document.getElementById('xpOut').innerHTML =
-    `XP per second: <b>${xpSec.toFixed(2)}</b><br>` +
-    `Time to target: <b>${hours.toFixed(1)} h</b>`;
+    `XP/s: <b>${xpSec.toFixed(2)}</b><br>` +
+    `Time to target: <b>${h}h ${m}m</b>`;
 }
 
-// ---------- GRANTER ----------
 function calcGranter(){
   const str = Math.max(50, Math.min(100, +document.getElementById('granterStr').value));
   const perSec = GRANTER * str / 60 / 100;
   const avg    = 1 / perSec;
   const wait95 = -Math.log(1-0.95) / perSec;
 
-  const fmt = s => s<60 ? `${s.toFixed(1)} s` :
-                  s<3600 ? `${(s/60).toFixed(1)} min` :
-                           `${(s/3600).toFixed(1)} h`;
+  const fmt = s => {
+    const h = Math.floor(s / 3600);
+    const m = Math.round((s % 3600) / 60);
+    return h ? `${h}h ${m}m` : `${m}m`;
+  };
 
   document.getElementById('granterOut').innerHTML =
     `Average: <b>${fmt(avg)}</b><br>95 % sure within: <b>${fmt(wait95)}</b>`;
 }
 </script>
+</body>
+</html>
