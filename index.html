@@ -36,23 +36,23 @@
   </div>
 
 <script>
-const GRANTER = 0.0072; // 0.72 % per minute (wiki)
+const GRANTER = 0.0072; // wiki: 0.72 % × STR per minute
 
 function calcXp(){
   const cur   = Math.max(50, Math.min(100, +document.getElementById('curStr').value));
   const tar   = Math.max(51, Math.min(100, +document.getElementById('tarStr').value));
-  const bonus = +document.getElementById('bonusAmt').value || 150;
+  const bonus = +document.getElementById('bonusAmt').value || 150; // wiki: 150 × STR
   const has   = document.getElementById('hasXpBoost').checked;
   if(cur >= tar){ alert('Target must be > Current'); return; }
 
-  // wiki: 26 % × STR per minute → convert to per-second chance
-  const triggerChance = has ? (26 * cur) / 60 / 100 : 0; // chance this second
-  const bonusThisSec  = triggerChance * bonus;           // average XP injected per second
-  const avgXPperSec   = 1 + bonusThisSec;                // base 1 + average bonus
+  // ---- wiki: 26 % × STR per minute → per-second chance ----
+  const triggerChance = has ? (26 * cur) / 60 / 100 : 0; // 0-1
+  const bonusPerSec   = triggerChance * bonus;           // average XP injected per second
+  const avgXPperSec   = 1 + bonusPerSec;                 // base 1 + average bonus
 
   const secondsNeeded = (tar - cur) / avgXPperSec;
 
-  // ---- h : m ----
+  // ---- never-zero minutes ----
   const h = Math.floor(secondsNeeded / 3600);
   const m = Math.max(1, Math.ceil((secondsNeeded % 3600) / 60));
 
