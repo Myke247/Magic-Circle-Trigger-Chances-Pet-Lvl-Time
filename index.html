@@ -23,7 +23,7 @@
     <label>Current XP <input id="curXp" type="number" min="0" value="0"></label>
     <label>Target XP <input id="tarXp" type="number" min="1" value="12000"></label>
     <label>Bonus XP per trigger <input id="bonusAmt" type="number" min="0" value="86"></label>
-    <label>Custom chance / min (%) <input id="chanceMin" type="number" min="0" max="100" step="0.1" value="15"></label>
+    <label>Custom chance / min (%) <input id="chanceMin" type="number" min="0" max="300" step="0.1" value="15"></label>
     <label><input id="hasXpBoost" type="checkbox" checked> Has XP Boost I?</label>
     <button onclick="calcXp()">Calc</button>
     <p id="xpOut"></p>
@@ -31,7 +31,7 @@
 
   <div class="card">
     <h2>🌈 Rainbow / Gold Granter</h2>
-    <label>STR <input id="granterStr" type="number" min="50" max="100" value="100"></label>
+    <label>STR <input id="granterStr" type="number" min="50" max="300" value="100"></label>
     <button onclick="calcGranter()">Calc</button>
     <p id="granterOut"></p>
   </div>
@@ -62,7 +62,7 @@ function calcXp(){
 }
 
 function calcGranter(){
-  const str = Math.max(50, Math.min(100, +document.getElementById('granterStr').value));
+  const str = Math.max(50, Math.min(300, +document.getElementById('granterStr').value));
   const perSec = GRANTER * str / 60 / 100;
   const avg    = 1 / perSec;
   const wait95 = -Math.log(1-0.95) / perSec;
