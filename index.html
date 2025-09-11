@@ -7,7 +7,7 @@
   <style>
     :root{--bg:#121212;--card:#1e1e1e;--text:#e0e0e0;--accent:#4caf50;--line:#333}
     body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;margin:1rem}
-    .card{background:var(--card);border:1px solid var(--line);padding:1.2rem;margin-bottom:1.2rem;border-radius:8px}
+    .card{background:var(card);border:1px solid var(--line);padding:1.2rem;margin-bottom:1.2rem;border-radius:8px}
     h2{margin-top:0;color:var(--accent)}
     label{display:block;margin:.6rem 0 .2rem}
     input[type=number]{width:6rem;padding:.4rem;background:#2a2a2a;color:var(--text);border:1px solid var(--line);border-radius:4px}
@@ -39,33 +39,36 @@
 const GRANTER = 0.0072; // 0.72 % per minute
 
 function calcXp(){
-  const cur  = Math.max(50,Math.min(100,+document.getElementById('curStr').value));
-  const tar  = Math.max(51,Math.min(100,+document.getElementById('tarStr').value));
-  const bonus= +document.getElementById('bonusAmt').value;
-  const has  = document.getElementById('hasXpBoost').checked;
-  if(cur>=tar){alert('Target must be > Current');return;}
+  const cur   = Math.max(50, Math.min(100, +document.getElementById('curStr').value));
+  const tar   = Math.max(51, Math.min(100, +document.getElementById('tarStr').value));
+  const bonus = +document.getElementById('bonusAmt').value;
+  const has   = document.getElementById('hasXpBoost').checked;
+  if(cur >= tar){ alert('Target must be > Current'); return; }
 
-  const chanceSec = has ? 26 * cur / 60 / 100 : 0; // trigger chance /s
-  const xpSec     = 1 + chanceSec * bonus;         // total XP each second
-  const totalSec  = (tar - cur) / xpSec;           // seconds needed
+  // ---- wiki: 26 % × STR per minute → decimal per second ----
+  const triggerChance = has ? (26 * cur) / 60 / 100 : 0; // triggers per second
+  const xpPerSecond   = 1 + triggerChance * bonus;        // base 1 + bonus
+  const secondsNeeded = (tar - cur) / xpPerSecond;        // seconds to target
 
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.round((totalSec % 3600) / 60);
-  const display = h ? `${h}h ${m}m` : `${m}m`;
+  // ---- convert to h:m ----
+  const h = Math.floor(secondsNeeded / 3600);
+  const m = Math.ceil((secondsNeeded % 3600) / 60); // ceil → never 0 if >0 s
 
   document.getElementById('xpOut').innerHTML =
-    `XP/s: <b>${xpSec.toFixed(2)}</b><br>Time to target: <b>${display}</b>`;
+    `XP/s: <b>${xpPerSecond.toFixed(2)}</b><br>` +
+    `Time to target: <b>${h}h ${m}m</b>`;
 }
 
 function calcGranter(){
-  const str = Math.max(50,Math.min(100,+document.getElementById('granterStr').value));
+  const str = Math.max(50, Math.min(100, +document.getElementById('granterStr').value));
   const perSec = GRANTER * str / 60 / 100;
   const avg    = 1 / perSec;
   const wait95 = -Math.log(1-0.95) / perSec;
 
   const fmt = s=>{
-    const h=Math.floor(s/3600),m=Math.round((s%3600)/60);
-    return h?`${h}h ${m}m`:`${m}m`;
+    const h = Math.floor(s / 3600);
+    const m = Math.ceil((s % 3600) / 60);
+    return h ? `${h}h ${m}m` : `${m}m`;
   };
   document.getElementById('granterOut').innerHTML =
     `Average: <b>${fmt(avg)}</b><br>95 % within: <b>${fmt(wait95)}</b>`;
