@@ -1,0 +1,74 @@
+magic-garden-calc
+index.html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Magic Garden Calc</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body{font-family:system-ui, sans-serif; margin:2rem; background:#f7fdf7}
+    label{display:block; margin:.5rem 0 .2rem}
+    input[type=number]{width:6rem; padding:.3rem}
+    button{margin-top:1rem; padding:.5rem 1.2rem}
+    .card{background:#fff; border:1px solid #cde6c4; padding:1.2rem; margin-bottom:1.5rem; border-radius:8px}
+    h2{margin-top:0}
+  </style>
+</head>
+<body>
+  <h1>Magic Garden Calculator</h1>
+
+  <div class="card">
+    <h2>⏱️ XP-Level-Time</h2>
+    <label>Current STR <input id="curStr" type="number" min="50" max="100" value="50"></label>
+    <label>Target STR <input id="tarStr" type="number" min="51" max="100" value="100"></label>
+    <label>Custom chance / min (%) <input id="customChance" type="number" min="0" max="100" step="0.1" value="15"></label>
+    <label><input id="hasXpBoost" type="checkbox" checked> Has XP Boost I?</label>
+    <button onclick="calcXp()">Calc</button>
+    <p id="xpOut"></p>
+  </div>
+
+  <div class="card">
+    <h2>🌈 Rainbow / Gold Granter</h2>
+    <label>STR <input id="granterStr" type="number" min="50" max="100" value="100"></label>
+    <button onclick="calcGranter()">Calc</button>
+    <p id="granterOut"></p>
+  </div>
+
+<script>
+const BONUS_FLAT = 87;
+const GRANTER_COEF = 0.0072;
+
+function calcXp(){
+  const cur   = +document.getElementById('curStr').value;
+  const tar   = +document.getElementById('tarStr').value;
+  const cMin  = +document.getElementById('customChance').value;
+  const has   = document.getElementById('hasXpBoost').checked;
+
+  if(cur >= tar){ alert('Target > Current'); return; }
+
+  const cSec = has ? cMin / 60 / 100 : 0;
+  const xpSec = 1 + cSec * BONUS_FLAT;
+  const sec = (tar - cur) / xpSec;
+  const h = sec / 3600;
+
+  document.getElementById('xpOut').innerText =
+    `XP/s: ${xpSec.toFixed(3)} → ${h.toFixed(2)} h`;
+}
+
+function calcGranter(){
+  const str = +document.getElementById('granterStr').value;
+  const perSec = GRANTER_COEF * str / 60 / 100;
+  const avg  = 1 / perSec;
+  const wait95 = -Math.log(1-0.95) / perSec;
+
+  const fmt = s => s<60 ? `${s.toFixed(1)} s` :
+                  s<3600 ? `${(s/60).toFixed(1)} min` :
+                           `${(s/3600).toFixed(2)} h`;
+
+  document.getElementById('granterOut').innerText =
+    `Average: ${fmt(avg)}  |  95 % sure within: ${fmt(wait95)}`;
+}
+</script>
+</body>
+</html>
