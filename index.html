@@ -20,8 +20,8 @@
 
   <div class="card">
     <h2>⏱️ XP-Level-Time</h2>
-    <label>Current STR <input id="curStr" type="number" min="50" max="100" value="50"></label>
-    <label>Target STR <input id="tarStr" type="number" min="51" max="100" value="66"></label>
+    <label>Current XP <input id="curXp" type="number" min="0" value="0"></label>
+    <label>Target XP <input id="tarXp" type="number" min="1" value="12000"></label>
     <label>Bonus XP per trigger <input id="bonusAmt" type="number" min="0" value="86"></label>
     <label>Custom chance / min (%) <input id="chanceMin" type="number" min="0" max="100" step="0.1" value="15"></label>
     <label><input id="hasXpBoost" type="checkbox" checked> Has XP Boost I?</label>
@@ -40,12 +40,12 @@
 const GRANTER = 0.0072; // wiki granter
 
 function calcXp(){
-  const cur   = Math.max(50, Math.min(100, +document.getElementById('curStr').value));
-  const tar   = Math.max(51, Math.min(100, +document.getElementById('tarStr').value));
+  const cur   = +document.getElementById('curXp').value || 0;
+  const tar   = +document.getElementById('tarXp').value || 12000;
   const bonus = +document.getElementById('bonusAmt').value || 86;
   const chancePerMin = +document.getElementById('chanceMin').value || 15;
   const has   = document.getElementById('hasXpBoost').checked;
-  if(cur >= tar){ alert('Target must be > Current'); return; }
+  if(cur >= tar){ alert('Target XP must be > Current XP'); return; }
 
   const triggerChance = has ? chancePerMin / 60 / 100 : 0;
   const bonusPerSec   = triggerChance * bonus;
