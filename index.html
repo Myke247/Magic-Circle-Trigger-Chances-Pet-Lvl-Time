@@ -102,22 +102,33 @@ function calcScale(){
   const str   = Math.max(50, Math.min(300, +document.getElementById('scaleStr').value));
   const pet   = document.getElementById('petSelect').value;
 
-  const minChance = pet === 'butterfly' ? 10 : 6;      // % per minute
-  const perSec = (minChance * str) / 60 / 100;         // → 0-1 per second
+  // per-second trigger chance (λ)
+  let perSec;
+  let boost;
+  if(pet === 'butterfly'){
+    perSec = (0.10 * str) / 60;
+    boost  = 0.40 * str;
+  } else {
+    perSec = (0.06 * str) / 60;
+    boost  = 0.30 * str;
+  }
 
-  const avg    = 1 / perSec;
-  const wait95 = -Math.log(1-0.95) / perSec;
+  const avg    = 1 / perSec;                   // average wait (seconds)
+  const wait95 = -Math.log(1-0.95) / perSec;   // 95% wait (seconds)
 
+  // Convert to minutes/hours
   const totalMin = avg / 60;
   const h1 = Math.floor(totalMin / 60);
   const m1 = Math.ceil(totalMin % 60 || 1);
+
   const totalMin95 = wait95 / 60;
   const h95 = Math.floor(totalMin95 / 60);
   const m95 = Math.ceil(totalMin95 % 60 || 1);
 
   document.getElementById('scaleOut').innerHTML =
     `Average: <b>${h1 ? h1+'h '+m1+'m' : m1+'m'}</b><br>` +
-    `95 % within: <b>${h95 ? h95+'h '+m95+'m' : m95+'m'}</b>`;
+    `95 % within: <b>${h95 ? h95+'h '+m95+'m' : m95+'m'}</b><br>` +
+    `Boost Size: <b>${boost.toFixed(1)}%</b>`;
 }
 </script>
 </body>
