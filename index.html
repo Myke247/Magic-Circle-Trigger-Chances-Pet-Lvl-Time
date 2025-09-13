@@ -53,7 +53,7 @@
   </div>
 
 <script>
-const GRANTER = 0.0072; // wiki granter
+const GRANTER = 0.0072;
 
 /* ---------- XP-Level-Time ---------- */
 function calcXp(){
@@ -102,28 +102,22 @@ function calcScale(){
   const str   = Math.max(50, Math.min(300, +document.getElementById('scaleStr').value));
   const pet   = document.getElementById('petSelect').value;
 
-  // 1. chance per second
-  const minChance = pet === 'butterfly' ? 10 : 6;     // % per minute
-  const perSec = (minChance * str) / 60 / 100;        // → 0-1 per second
+  const minChance = pet === 'butterfly' ? 10 : 6;      // % per minute
+  const perSec = (minChance * str) / 60 / 100;         // → 0-1 per second
 
-  // 2. average & 95 % wait times
   const avg    = 1 / perSec;
   const wait95 = -Math.log(1-0.95) / perSec;
 
-  // 3. convert to h:m
   const totalMin = avg / 60;
   const h1 = Math.floor(totalMin / 60);
   const m1 = Math.ceil(totalMin % 60 || 1);
-
   const totalMin95 = wait95 / 60;
   const h95 = Math.floor(totalMin95 / 60);
   const m95 = Math.ceil(totalMin95 % 60 || 1);
 
-  // 4. display
   document.getElementById('scaleOut').innerHTML =
     `Average: <b>${h1 ? h1+'h '+m1+'m' : m1+'m'}</b><br>` +
     `95 % within: <b>${h95 ? h95+'h '+m95+'m' : m95+'m'}</b>`;
-    
 }
 </script>
 </body>
