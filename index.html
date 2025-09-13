@@ -97,46 +97,29 @@ function calcGranter(){
     `95 % within: <b>${h95 ? h95+'h '+m95+'m' : m95+'m'}</b>`;
 }
 
-/* ---------- Crop Scale-Boost Timer (corrected using wiki values) ---------- */
+/* ---------- Crop Scale-Boost Timer (fixed math) ---------- */
 function calcScale(){
-  // clamp user STR input (50 - 300)
   const str   = Math.max(50, Math.min(300, +document.getElementById('scaleStr').value));
   const pet   = document.getElementById('petSelect').value;
 
-  // Using the wiki ability values (percent numbers):
-  // Bee:       Probability = 0.30% × STR#    Scale = 6.0% × STR#
-  // Butterfly: Probability = 0.40% × STR#    Scale = 10%  × STR#
-  // (STR# is interpreted as STR / 100)
-  let probPct, scalePct;
-  if(pet === 'butterfly'){
-    probPct  = 0.40; // 0.40 %
-    scalePct = 10.0; // 10 %
-  } else {
-    probPct  = 0.30; // 0.30 %
-    scalePct = 6.0;  // 6.0 %
-  }
+  // wiki numbers: 0.30 % or 0.40 % **per STR#** (STR# = STR / 100)
+  const baseProbPerStr = pet === 'butterfly' ? 0.0040 : 0.0030; // 0.40 % or 0.30 % → decimal
+  const probPerMinute  = baseProbPerStr * str;                  // e.g. 0.004 * 100 = 0.4 % per minute
+  const perSec = probPerMinute / 100 / 60;                      // → decimal per second
 
-  const strFactor = str / 100;                // STR# (so input 100 -> 1.0)
-  const probPercentPerMinute = probPct * strFactor; // e.g. 0.30% * 1 => 0.30% per minute
-  const perMinuteDecimal = probPercentPerMinute / 100; // convert % -> decimal per minute
-  const perSec = perMinuteDecimal / 60;               // convert to per-second rate (λ)
+  const avgSec    = 1 / perSec;
+  const wait95Sec = -Math.log(1 - 0.95) / perSec;
 
-  const avgSec    = 1 / perSec;                       // mean wait in seconds
-  const wait95Sec = -Math.log(1 - 0.95) / perSec;     // 95% wait in seconds
-
-  function fmtSecondsAsHMS(seconds){
-    const totalMin = seconds / 60;
-    const h = Math.floor(totalMin / 60);
-    const m = Math.ceil(totalMin % 60);
+  function fmt(seconds){
+    const min = seconds / 60;
+    const h = Math.floor(min / 60);
+    const m = Math.ceil(min % 60);
     return h ? `${h}h ${m}m` : `${m}m`;
   }
 
-  const boostPctDisplayed = (scalePct * strFactor); // e.g. 6% * 1.0 => 6%
-
   document.getElementById('scaleOut').innerHTML =
-    `Average: <b>${fmtSecondsAsHMS(avgSec)}</b><br>` +
-    `95 % within: <b>${fmtSecondsAsHMS(wait95Sec)}</b><br>` +
-    `Boost Size: <b>${boostPctDisplayed.toFixed(1)}%</b>`;
+    `Average: <b>${fmt(avgSec)}</b><br>` +
+    `95 % within: <b>${fmt(wait95Sec)}</b>`;
 }
 </script>
 </body>
