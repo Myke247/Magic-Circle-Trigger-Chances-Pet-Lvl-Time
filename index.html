@@ -10,7 +10,7 @@
     .card{background:var(--card);border:1px solid var(--line);padding:1.2rem;margin-bottom:1.2rem;border-radius:8px}
     h2{margin-top:0;color:var(--accent)}
     label{display:block;margin:.6rem 0 .2rem}
-    input[type=number]{width:6rem;padding:.4rem;background:#2a2a2a;color:var(--text);border:1px solid var(--line);border-radius:4px}
+    input[type=number],select{width:6rem;padding:.4rem;background:#2a2a2a;color:var(--text);border:1px solid var(--line);border-radius:4px}
     button{margin-top:1rem;padding:.5rem 1.3rem;background:var(--accent);color:#000;border:none;border-radius:4px;font-weight:bold}
     b{color:#fff}
   </style>
@@ -18,17 +18,19 @@
 <body>
   <h1>Magic Garden Calculator</h1>
 
+  <!-- ➊ XP-Level-Time -->
   <div class="card">
     <h2>⏱️ XP-Level-Time</h2>
     <label>Current XP <input id="curXp" type="number" min="0" value="0"></label>
     <label>Target XP <input id="tarXp" type="number" min="1" value="12000"></label>
     <label>Bonus XP per trigger <input id="bonusAmt" type="number" min="0" value="86"></label>
-    <label>Custom chance / min (%) <input id="chanceMin" type="number" min="0" max="300" step="0.1" value="15"></label>
+    <label>Custom chance / min (%) <input id="chanceMin" type="number" min="0" max="100" step="0.1" value="15"></label>
     <label><input id="hasXpBoost" type="checkbox" checked> Has XP Boost I?</label>
     <button onclick="calcXp()">Calc</button>
     <p id="xpOut"></p>
   </div>
 
+  <!-- ➋ Rainbow / Gold Granter -->
   <div class="card">
     <h2>🌈 Rainbow / Gold Granter</h2>
     <label>STR <input id="granterStr" type="number" min="50" max="300" value="100"></label>
@@ -36,9 +38,24 @@
     <p id="granterOut"></p>
   </div>
 
+  <!-- ➌ Crop Scale-Boost Timer -->
+  <div class="card">
+    <h2>🌱 Crop Scale-Boost Timer</h2>
+    <label>Pet
+      <select id="petSelect">
+        <option value="butterfly">Butterfly</option>
+        <option value="bee">Bee</option>
+      </select>
+    </label>
+    <label>STR <input id="scaleStr" type="number" min="50" max="300" value="100"></label>
+    <button onclick="calcScale()">Calc</button>
+    <p id="scaleOut"></p>
+  </div>
+
 <script>
 const GRANTER = 0.0072; // wiki granter
 
+/* ---------- XP-Level-Time ---------- */
 function calcXp(){
   const cur   = +document.getElementById('curXp').value || 0;
   const tar   = +document.getElementById('tarXp').value || 12000;
@@ -61,6 +78,7 @@ function calcXp(){
     `Est. time to target: <b>${h}h ${m}m</b>`;
 }
 
+/* ---------- Rainbow / Gold Granter ---------- */
 function calcGranter(){
   const str = Math.max(50, Math.min(300, +document.getElementById('granterStr').value));
   const perSec = GRANTER * str / 60 / 100;
@@ -75,6 +93,30 @@ function calcGranter(){
   const m95 = Math.ceil(totalMin95 % 60 || 1);
 
   document.getElementById('granterOut').innerHTML =
+    `Average: <b>${h1 ? h1+'h '+m1+'m' : m1+'m'}</b><br>` +
+    `95 % within: <b>${h95 ? h95+'h '+m95+'m' : m95+'m'}</b>`;
+}
+
+/* ---------- Crop Scale-Boost Timer ---------- */
+function calcScale(){
+  const str   = Math.max(50, Math.min(300, +document.getElementById('scaleStr').value));
+  const pet   = document.getElementById('petSelect').value;
+
+  const mult  = pet === 'butterfly' ? 0.004 : 0.003; // 0.40 % or 0.30 %
+  const minChance = pet === 'butterfly' ? 10 : 6;     // 10 % or 6 % per minute
+  const perSec = (minChance * str) / 60 / 100;        // chance per second
+
+  const avg    = 1 / perSec;
+  const wait95 = -Math.log(1-0.95) / perSec;
+
+  const totalMin = avg / 60;
+  const h1 = Math.floor(totalMin / 60);
+  const m1 = Math.ceil(totalMin % 60 || 1);
+  const totalMin95 = wait95 / 60;
+  const h95 = Math.floor(totalMin95 / 60);
+  const m95 = Math.ceil(totalMin95 % 60 || 1);
+
+  document.getElementById('scaleOut').innerHTML =
     `Average: <b>${h1 ? h1+'h '+m1+'m' : m1+'m'}</b><br>` +
     `95 % within: <b>${h95 ? h95+'h '+m95+'m' : m95+'m'}</b>`;
 }
