@@ -81,9 +81,10 @@ function calcXp(){
 /* ---------- Rainbow / Gold Granter ---------- */
 function calcGranter(){
   const str = Math.max(50, Math.min(300, +document.getElementById('granterStr').value));
-  const perSec = GRANTER * str / 60 / 100;
+  const chancePerMinute = GRANTER * str;              // 0.72 % × STR
+  const perSec = 1 - Math.pow(1 - chancePerMinute / 100, 1 / 60); // exact convert
   const avg    = 1 / perSec;
-  const wait95 = -Math.log(1-0.95) / perSec;
+  const wait95 = -Math.log(1 - 0.95) / perSec;
 
   const totalMin = avg / 60;
   const h1 = Math.floor(totalMin / 60);
@@ -97,15 +98,15 @@ function calcGranter(){
     `95 % within: <b>${h95 ? h95+'h '+m95+'m' : m95+'m'}</b>`;
 }
 
-/* ---------- Crop Scale-Boost Timer (fixed math) ---------- */
+/* ---------- Crop Scale-Boost Timer ---------- */
 function calcScale(){
   const str   = Math.max(50, Math.min(300, +document.getElementById('scaleStr').value));
   const pet   = document.getElementById('petSelect').value;
 
-  // wiki numbers: 0.30 % or 0.40 % **per STR#** (STR# = STR / 100)
-  const baseProbPerStr = pet === 'butterfly' ? 0.0040 : 0.0030; // 0.40 % or 0.30 % → decimal
-  const probPerMinute  = baseProbPerStr * str;                  // e.g. 0.004 * 100 = 0.4 % per minute
-  const perSec = probPerMinute / 100 / 60;                      // → decimal per second
+  // wiki values (percent per STR#)
+  const baseProbPerStr = pet === 'butterfly' ? 0.0040 : 0.0030; // 0.40 % or 0.30 %
+  const chancePerMinute = baseProbPerStr * str;                 // e.g. 0.4 % at 100 STR
+  const perSec = 1 - Math.pow(1 - chancePerMinute / 100, 1 / 60); // exact convert
 
   const avgSec    = 1 / perSec;
   const wait95Sec = -Math.log(1 - 0.95) / perSec;
